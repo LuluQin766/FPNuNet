@@ -1,0 +1,16 @@
+{
+  "python.defaultInterpreterPath": "/home/qll/.local/bin/py-in-container",
+  "python.analysis.indexing": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "information"
+  },
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "-q"
+  ],
+  "cursorpyright.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "information"
+  }
+}
