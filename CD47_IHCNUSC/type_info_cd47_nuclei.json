@@ -6,6 +6,7 @@
     "4" : ["negative_tumor", [1, 255, 255]],
     "5" : ["negative_immune", [1, 255, 1]],
     "6" : ["negative_others", [230, 179, 77]],
-    "7" : ["negative_stroma", [1, 128, 1]]
+    "7" : ["negative_stroma", [1, 128, 1]],
+    "8" : ["ambiguous", [1, 1, 255]]
 }
 
