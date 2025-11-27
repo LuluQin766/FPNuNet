@@ -15,7 +15,7 @@ This work is built upon **SAM2-PATH** [arxiv](https://arxiv.org/abs/2408.03651),
 If you use our code or data in your research, please cite our paper:
 
 ```bibtex
-@article{lulu2026fpnunet,
+@article{qin2026fpnunet,
   title={FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear Segmentation and Classification in Immunohistochemistry Images},
   author={Lulu Qin, Zhigang Pei, Xudong He, Jiarui Zhou, Xianhong Xu and Zexuan Zhu},
   journal={GigaScience},
