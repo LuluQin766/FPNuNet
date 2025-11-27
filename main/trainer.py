@@ -10,9 +10,9 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, EarlyStopping
 
-from utils_run02 import get_data_module, get_pl_module
+from utils import get_data_module, get_pl_module
 from get_model import get_model
-from metrics_v21 import get_metrics
+from metrics import get_metrics
 
 
 def save_model_config(cfg, run_name):
@@ -131,7 +131,7 @@ def train_model(cfg, run_name=None):
     
     pl_module = get_pl_module(cfg, model=sam_model, metrics=metrics, version=pl_module_version)
     
-    # 注意：TensorBoard 记录已在 pl_module_multiHead_v21.py 中自定义实现
+    # 注意：TensorBoard 记录已在 pl_module_multiHead.py 中自定义实现
     # 这里只设置 WandB logger，避免重复记录
     
     # 设置WandB logger

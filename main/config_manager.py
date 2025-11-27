@@ -43,18 +43,21 @@ def load_config(config_path):
     加载配置文件
     
     Args:
-        config_path: 配置文件路径，如 "configs_run2.cd47nusc_HV_h5x128_debug"
+        config_path: 配置文件路径，如 "configs.CD47_nuclei_HV_h5_128x128"
         
     Returns:
         cfg: 配置对象
     """
     # 处理配置文件路径
-    if config_path.startswith('configs_run2/'):
+    if config_path.startswith('configs/'):
         # 移除路径前缀，只保留模块名
-        config_path = config_path.replace('configs_run2/', '').replace('.py', '')
+        config_path = config_path.replace('configs/', '').replace('.py', '')
+    elif config_path.startswith('configs.'):
+        # 如果已经是 configs. 格式，直接使用
+        config_path = config_path.replace('configs.', '')
     
-    # 添加configs_run2前缀
-    full_module_path = f"configs_run2.{config_path}"
+    # 添加configs前缀
+    full_module_path = f"configs.{config_path}"
     module = __import__(full_module_path, globals(), locals(), ['cfg'])
     cfg = module.cfg
     return cfg
@@ -141,7 +144,7 @@ def create_argument_parser():
     parser = ArgumentParser()
     
     # 基本参数
-    parser.add_argument("--config", default="configs_run2.cd47nusc_HV_h5x128_debug", type=str,
+    parser.add_argument("--config", default="configs.CD47_nuclei_HV_h5_128x128", type=str,
                       help="Configuration file path")
     parser.add_argument('--project', type=str, default="FPNuNet_cd47nuscx128",
                       help="Project name for logging")

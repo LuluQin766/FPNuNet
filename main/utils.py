@@ -123,27 +123,28 @@ def _import_pl_module(version="v21"):
     根据版本号动态导入对应的PyTorch Lightning模块
     
     Args:
-        version (str): 版本号，支持 "v21" 或 "v22"
+        version (str): 版本号，支持 "v21" 或 "v22"（现在统一使用 pl_module_multiHead）
         
     Returns:
         SamSegMultiHead: 对应版本的模块类
     """
+    # 统一从 pl_module_multiHead 导入
+    from pl_module_multiHead import SamSegMultiHeadV6 as SamSegMultiHead
+    
     if version == "v21":
-        from pl_module_multiHead_v21 import SamSegMultiHeadV6 as SamSegMultiHead
         print(f"\n📦 使用 PyTorch Lightning 模块版本: {version}")
         print(f"🎯 学习率调度方法: LambdaLR (固定步数衰减)")
         print(f"   - 支持参数: steps, warmup_steps")
         print(f"   - 调度方式: warmup → 1.0 → 0.1 → 0.01\n")
-        return SamSegMultiHead
     elif version == "v22":
-        from pl_module_multiHead_v22 import SamSegMultiHeadV6 as SamSegMultiHead
         print(f"\n📦 使用 PyTorch Lightning 模块版本: {version}")
         print(f"🎯 学习率调度方法: CosineAnnealingLR + Warmup (余弦退火)")
         print(f"   - 支持参数: warmup_steps, gradient_clip_val, scheduler")
         print(f"   - 调度方式: warmup → 余弦退火衰减\n")
-        return SamSegMultiHead
     else:
-        raise ValueError(f"\n❌ 不支持的版本: {version}。支持的版本: v21, v22\n")
+        print(f"\n⚠️ 未知版本: {version}，使用默认模块\n")
+    
+    return SamSegMultiHead
 
 
 def get_data_module(cfg):

@@ -92,14 +92,14 @@ def run_parallel_training():
     # 定义多个训练配置
     training_configs = [
         {
-            'config_path': 'configs_run2.cd47nusc_HV_h5x128_debug',
+            'config_path': 'configs.CD47_nuclei_HV_h5_128x128',
             'project': 'FPNuNet-cd47nuscx128',
             'name': 'FPNuNet_cd47nuscx128_Mv231_GPU0',
             'devices': '0',
             'seed': 42
         },
         {
-            'config_path': 'configs_run2.cd47nusc_HV_h5x128_debug',
+            'config_path': 'configs.CD47_nuclei_HV_h5_128x128',
             'project': 'FPNuNet-cd47nuscx128',
             'name': 'FPNuNet_cd47nuscx128_Mv231_GPU1',
             'devices': '1',
@@ -132,14 +132,14 @@ def run_sequential_training():
     # 定义多个训练配置
     training_configs = [
         {
-            'config_path': 'configs_run2.cd47nusc_HV_h5x128_debug',
+            'config_path': 'configs.CD47_nuclei_HV_h5_128x128',
             'project': 'FPNuNet-cd47nuscx128',
             'name': 'FPNuNet_cd47nuscx128_Mv231_Sequential1',
             'devices': '0',
             'seed': 42
         },
         {
-            'config_path': 'configs_run2.cd47nusc_HV_h5x128_debug',
+            'config_path': 'configs.CD47_nuclei_HV_h5_128x128',
             'project': 'FPNuNet-cd47nuscx128',
             'name': 'FPNuNet_cd47nuscx128_Mv231_Sequential2',
             'devices': '0',

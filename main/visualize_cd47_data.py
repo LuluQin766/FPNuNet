@@ -15,7 +15,7 @@ import json
 from skimage import measure, morphology
 
 # 添加项目根目录到路径
-sys.path.append('/root/aMI_projects/SRSA-Net-main')
+sys.path.append('/root/FPNuNet')
 
 # 设置英文字体
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'sans-serif']
@@ -719,7 +719,7 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='可视化CD47数据集')
     parser.add_argument('--data_dir', type=str,
-                       default='/root/aMI_DATASET/SRSANet_dataset/CD47_SRSANet_traindata_256x256',
+                       default='/root/CD47_SRSANet_traindata',
                        help='处理后的数据目录')
     parser.add_argument('--split', type=str, default='train', choices=['train', 'val'],
                        help='要可视化的数据分割')

@@ -1,14 +1,14 @@
 from box import Box
 
 name = "CD47_nuclei"
-dataset_root = f"/root/public_data/a_SAMNuSeg_train_dataset/{name}_patches_v5"
+dataset_root = f"/root/{name}_patches_v5"
 
 config = {
     "devices": None,
     "batch_size": 12,
     "accumulate_grad_batches": 1,
     "num_workers": 8,
-    "out_dir": "/root/aMI_results/SAM2PATH_results_multiHeadv5_128x128_80epoches",
+    "out_dir": "/root/FPNuNet_results",
     "log_dir": None,
     "log_train_images_path": None,
     "log_val_images_path": None,
@@ -22,7 +22,7 @@ config = {
     },
     "model": {
         "type": 'vit_b',
-        "checkpoint": "/root/aMI_DATASET/202307_MedAGI_SAMPath/sam_vit_b_01ec64.pth",
+        "checkpoint": "/root/pretrained_models/sam_vit_b_01ec64.pth",
         "freeze": {
             "image_encoder": True,
             "prompt_encoder": True,
@@ -34,7 +34,7 @@ config = {
 
         "extra_encoder": 'uni_v1',
         "extra_type": "multihead_v15",
-        "extra_checkpoint": "/root/aMI_DATASET/202307_MedAGI_SAMPath/uni/pytorch_model.bin",
+        "extra_checkpoint": "/root/pretrained_models/uni/pytorch_model.bin",
     },
     "loss": {
         "bin": {
@@ -73,7 +73,7 @@ config = {
         "train_h5_file_path": f"{dataset_root}/gt_{name}_train_128x128_64x64_img_inst_type_hv.h5",
         "test_h5_file_path": f"{dataset_root}/gt_{name}_valid_128x128_64x64_img_inst_type_hv.h5",
         "num_classes": 8,
-        "type_info_path": "/root/SAM2PATH-main/dataset_process/type_info_cd47_nuclei.json",
+        "type_info_path": "../CD47_IHCNUSC/type_info_cd47_nuclei.json",
         "color_dict": {
             "0" : ["background", [1,   1, 1]],
             "1" : ["positive_tumor", [255, 1, 1]],

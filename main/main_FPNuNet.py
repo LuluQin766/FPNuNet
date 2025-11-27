@@ -1,4 +1,4 @@
-# main_FPNuNet_v21n01.py
+# main_FPNuNet.py
 import sys
 from matplotlib.pylab import f
 sys.path.append('/root/SAM2PATH-main')
