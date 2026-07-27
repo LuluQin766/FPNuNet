@@ -40,15 +40,19 @@ consistent with the manuscript's rounded `394.8M / 5.4M` report.
 Python 3.9 or newer is recommended.
 
 ```bash
+git clone https://github.com/LuluQin766/FPNuNet.git
+cd FPNuNet
+
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Download the SAM ViT-B checkpoint `sam_vit_b_01ec64.pth` from Meta's Segment
-Anything release and the UNI ViT-L `pytorch_model.bin` checkpoint from the
-official UNI release. Their code and weights remain subject to their own
-licenses.
+Download the SAM ViT-B checkpoint `sam_vit_b_01ec64.pth` from Meta's
+[Segment Anything](https://github.com/facebookresearch/segment-anything)
+release and the UNI ViT-L `pytorch_model.bin` checkpoint from the official
+[UNI](https://github.com/mahmoodlab/UNI) release. Their code and weights remain
+subject to their own licenses.
 
 ## Model construction
 
@@ -143,6 +147,26 @@ validation boundary.
 ```
 
 Please also cite the original SAM and UNI publications.
+
+## Acknowledgments
+
+FPNuNet builds on ideas, implementations, and pretrained representations from
+the following projects:
+
+- [Path-SAM2](https://arxiv.org/abs/2408.03651), which adapts SAM2 for
+  semantic segmentation in digital pathology;
+- [SAM-Path](https://link.springer.com/chapter/10.1007/978-3-031-47401-9_16)
+  and its [SAMPath codebase](https://github.com/cvlab-stonybrook/SAMPath),
+  which adapt SAM for semantic segmentation in digital pathology;
+- Meta's [Segment Anything](https://github.com/facebookresearch/segment-anything),
+  which provides the SAM ViT-B backbone used by this release;
+- Mahmood Lab's [UNI](https://github.com/mahmoodlab/UNI), which provides the
+  pathology foundation encoder.
+
+We thank the authors of these projects for making their code, models, and
+research publicly available. FPNuNet does not redistribute their pretrained
+weights; please obtain them from the respective official repositories and
+follow their licenses and terms of use.
 
 ## License
 
