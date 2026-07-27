@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use FPNuNet, please cite the accompanying paper."
+title: "FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear Segmentation and Classification in Immunohistochemistry Images"
+type: software
+authors:
+  - family-names: Qin
+    given-names: Lulu
+  - family-names: Pei
+    given-names: Zhigang
+  - family-names: He
+    given-names: Xudong
+  - family-names: Zhou
+    given-names: Jiarui
+  - family-names: Xu
+    given-names: Xianhong
+  - family-names: Zhu
+    given-names: Zexuan
+year: 2026
+license: MIT

@@ -1,214 +1,150 @@
-## FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear Segmentation and Classification in Immunohistochemistry Images
+# FPNuNet
 
-![Alt text](imgs/image.png)
+Official compact implementation of **FPNuNet: A Frequency-Aware
+Prompt-Guided Network for Nuclear Segmentation and Classification in
+Immunohistochemistry Images**.
 
-This is the official code repository for "FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear Segmentation and Classification in Immunohistochemistry Images".
+This release contains the final model, loss, optimizer schedule, patch
+inference, and HoVer-Net-style instance post-processing. Historical models,
+ablations, experiment launchers, datasets, logs, and pretrained weights are
+not included.
 
-### Introduction
+## Architecture
 
-Accurate nuclear segmentation and classification (NuSC) in immunohistochemistry (IHC)-stained images is essential for reliable biomarker quantification, yet existing methods frequently underperform due to domain-specific challenges such as stain heterogeneity and low nuclear contrast. FPNuNet addresses these limitations through a frequency-aware prompt-guided architecture that integrates RGB and Hematoxylin-Eosin-Diaminobenzidine channels via a color fusion stem, processes features through SAM-based structural and ViT-based semantic encoders modulated by lightweight prompt adapters, and employs a progressive frequency-aware residual global fusion neck to aggregate multi-scale features. The network utilizes three collaborative decoder branches to jointly predict binary masks, horizontal-vertical vectors, and nuclear types, enabling robust performance across diverse IHC staining conditions. Experimental evaluation on the CD47-IHCNuSC dataset demonstrates that FPNuNet consistently outperforms state-of-the-art baselines in both segmentation accuracy and classification robustness.
+FPNuNet processes RGB patches of shape `B x 3 x 128 x 128` through four
+parallel encoders:
 
-This work is built upon **SAM2-PATH** [arxiv](https://arxiv.org/abs/2408.03651), which is a better segment anything model for semantic segmentation in digital pathology. We extend SAM2-PATH with frequency-aware mechanisms and prompt-guided strategies specifically designed for nuclear segmentation and classification in immunohistochemistry (IHC) images.
+- a frozen SAM ViT-B structural backbone with a trainable `8 x 8` patch
+  projection and a DCT high-pass prompt generator;
+- a frozen UNI ViT-L semantic backbone with prompts injected into alternating
+  transformer layers and features collected from layers 3, 12, and 21;
+- a Haar wavelet feature encoder (WFE) producing LL/LH/HL/HH descriptors;
+- a three-scale spatial context encoder (MSCE).
 
-### Citation
+A four-way DCT-enabled PFAE neck fuses SAM, UNI, WFE, and MSCE features.
+Two DCT-PFAE necks enhance the high-resolution UNI skips used by the decoder.
+The binary decoder runs first and supplies hierarchical guidance to the HV and
+type branches. The HV branch uses bilinear upsampling, skip cross-attention,
+dense refinement, and binary gating. In the type branch, learned prompts are
+the attention Query and pooled decoder features are Key/Value.
 
-If you use our code or data in your research, please cite our paper:
+The model returns raw logits or raw regression values; it does not apply
+`sigmoid` or `softmax` internally.
 
-```bibtex
-@article{qin2026fpnunet,
-  title={FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear Segmentation and Classification in Immunohistochemistry Images},
-  author={Lulu Qin, Zhigang Pei, Xudong He, Jiarui Zhou, Xianhong Xu and Zexuan Zhu},
-  journal={GigaScience},
-  year={2026}
-}
-```
+With SAM ViT-B and UNI ViT-L loaded, the five-class release contains
+`394,898,226` total parameters and `5,403,954` trainable parameters (1.37%),
+consistent with the manuscript's rounded `394.8M / 5.4M` report.
 
----
+## Installation
 
-## 🚀 Download and Install
-
-### System Requirements
-
-- Python >= 3.8
-- CUDA-capable GPU (recommended for training)
-- CUDA Toolkit (for GPU support)
-- PyTorch >= 1.13.0
-- Sufficient disk space for datasets and model checkpoints
-
-### Installation Steps
-
-1. **Clone the repository:**
-
-```bash
-git clone https://github.com/your_username/FPNuNet.git
-cd FPNuNet
-```
-
-2. **Create a conda environment (recommended):**
+Python 3.9 or newer is recommended.
 
 ```bash
-conda create -n fpnunet python=3.8
-conda activate fpnunet
-```
-
-3. **Install PyTorch:**
-
-   Install PyTorch according to your CUDA version from [PyTorch official website](https://pytorch.org/). For example:
-
-```bash
-# For CUDA 11.8
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-```
-
-4. **Install dependencies:**
-
-```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-   The `requirements.txt` includes all necessary packages:
-   - Core deep learning frameworks (PyTorch, PyTorch Lightning)
-   - Data processing libraries (NumPy, SciPy, h5py, OpenCV)
-   - Configuration utilities (PyYAML, box)
-   - Visualization tools (Matplotlib, imageio)
-   - Machine learning tools (scikit-learn, timm)
-   - Logging and monitoring (wandb, tensorboard)
-   - Data augmentation (albumentations)
-   - Metrics (torchmetrics)
+Download the SAM ViT-B checkpoint `sam_vit_b_01ec64.pth` from Meta's Segment
+Anything release and the UNI ViT-L `pytorch_model.bin` checkpoint from the
+official UNI release. Their code and weights remain subject to their own
+licenses.
 
-5. **Download pretrained weights:**
+## Model construction
 
-   - **SAM2 weights**: Download from [SAM2 repository](https://github.com/facebookresearch/segment-anything-2)
-     - Recommended: `sam_vit_b_01ec64.pth` (ViT-B model)
-   - **UNI encoder weights**: Download from [UNI repository](https://github.com/mahmoodlab/UNI)
-     - Download the PyTorch model file (e.g., `pytorch_model.bin`)
+```python
+import torch
+from network import build_model
 
-   Place the downloaded weights in appropriate directories and update the paths in the configuration files.
+model = build_model(
+    sam_checkpoint="/path/to/sam_vit_b_01ec64.pth",
+    uni_checkpoint="/path/to/uni/pytorch_model.bin",
+    fpnunet_checkpoint="/path/to/fpnunet.pt",  # optional
+    device="cuda",
+).eval()
 
----
+# Input is RGB, float32, scaled to [0, 1].
+image = torch.rand(2, 3, 128, 128, device="cuda")
+with torch.inference_mode():
+    output = model(image)
+```
 
-## ⚙️ Usage
+Output contract:
 
-### Data Preparation
+| Key | Shape | Meaning |
+|---|---|---|
+| `bin` | `[B, 1, 128, 128]` | Binary-nucleus logits |
+| `boundary` | `[B, 1, 128, 128]` | Boundary logits |
+| `hv` | `[B, 2, 128, 128]` | Horizontal/vertical regression |
+| `tp` | `[B, 5, 128, 128]` | Type logits |
+| `type_aux` | two lower-resolution tensors | Optional deep-supervision logits |
 
-1. **Download the CD47-IHCNuSC dataset:**
+The type-channel order is `background`, `pTu`, `pIm`, `nTu`, `nOth`.
+`build_model()` accepts a plain state dictionary or a checkpoint containing
+`state_dict`, `model_state_dict`, or `model`; common training prefixes are
+removed automatically.
 
-   The dataset can be found in the `CD47_IHCNUSC/` directory. For detailed dataset information, please refer to `CD47_IHCNUSC/readme_en.md`.
-   
-   **Note**: The CD47-IHCNuSC dataset is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Please review the license file in `CD47_IHCNUSC/` before use.
+## Loss and optimizer
 
-2. **Prepare data patches:**
+```python
+from main import FPNuNetLoss, build_optimizer
 
-   The dataset should be preprocessed into HDF5 format. The expected data structure in HDF5 files includes:
-   - Image patches
-   - Instance segmentation masks
-   - Nuclear type labels
-   - Horizontal-vertical (HV) vectors
-   
-   Organize your processed data as specified in the configuration file:
-   ```
-   dataset_root/
-   ├── gt_{name}_train_128x128_64x64_img_inst_type_hv.h5
-   └── gt_{name}_valid_128x128_64x64_img_inst_type_hv.h5
-   ```
+criterion = FPNuNetLoss()
+optimizer, scheduler = build_optimizer(model)
+```
 
-3. **Update configuration file:**
+The paper configuration is in `configs/fpnunet_cd47.py`:
 
-   Edit the configuration file in `configs/` directory (e.g., `CD47_nuclei_HV_h5_128x128.py`) to set:
-   - `dataset_root`: Path to your dataset directory
-   - `checkpoint`: Path to SAM2 pretrained weights (e.g., `sam_vit_b_01ec64.pth`)
-   - `extra_checkpoint`: Path to UNI encoder pretrained weights (e.g., `pytorch_model.bin`)
-   - `out_dir`: Output directory for saving model checkpoints and logs
-   - `batch_size`: Training batch size (default: 12)
-   - `num_epochs`: Number of training epochs (default: 80)
-   - `learning_rate`: Initial learning rate (default: 5e-4)
-   - `devices`: GPU device IDs for training (e.g., `[0]` for single GPU, `[0, 1]` for multi-GPU)
+- binary BCE + Dice + focal, with `0.5 x` boundary loss;
+- foreground-normalized HV MSE + Sobel MSGE;
+- equally weighted type CE + Dice + focal + soft IoU;
+- CE weights `[0.25, 1.0, 1.0, 1.0, 1.0]`;
+- AdamW with prompt-generator LR `1e-3`, other trainable-component LR `5e-4`,
+  1,000-step warmup, `0.5 x` decay at steps 20,000 and 27,000, and 30,000
+  total steps with bf16 mixed precision.
 
-### Training
-
-Run the training script with your configuration file:
+## Patch inference
 
 ```bash
-python main/main_FPNuNet.py --config configs/CD47_nuclei_HV_h5_128x128.py
+python -m main.infer \
+  --image sample.png \
+  --sam-checkpoint /path/to/sam_vit_b_01ec64.pth \
+  --uni-checkpoint /path/to/uni/pytorch_model.bin \
+  --checkpoint /path/to/fpnunet.pt \
+  --output outputs \
+  --device cuda
 ```
 
-#### Training Options
+The command writes `instance_map.npy` and `type_map.npy`. It is a patch-level
+reference implementation and does not resize predictions back to the source
+image. Prepare `128 x 128` patches when spatial correspondence must be
+preserved.
 
-The training script supports various options that can be configured in the config file:
-
-- `batch_size`: Training batch size (default: 12)
-- `num_epochs`: Number of training epochs (default: 80)
-- `learning_rate`: Initial learning rate (default: 5e-4)
-- `devices`: GPU device IDs (e.g., [0, 1] for multi-GPU training)
-- `out_dir`: Output directory for saving model checkpoints and logs
-
-#### Training Example
+## Validation
 
 ```bash
-# Single GPU training
-python main/main_FPNuNet.py --config configs/CD47_nuclei_HV_h5_128x128.py
-
-# Multi-GPU training (if supported)
-# Set devices in config file: devices = [0, 1, 2, 3]
+pytest -q
 ```
 
-The training process will save model checkpoints and logs to the directory specified in the configuration file. You can monitor training progress using TensorBoard:
+See `VALIDATION.md` for the real-checkpoint GPU smoke command and the exact
+validation boundary.
 
-```bash
-tensorboard --logdir <your_output_directory>/logs
+## Citation
+
+```bibtex
+@article{qin2026fpnunet,
+  title   = {FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear
+             Segmentation and Classification in Immunohistochemistry Images},
+  author  = {Qin, Lulu and Pei, Zhigang and He, Xudong and Zhou, Jiarui and
+             Xu, Xianhong and Zhu, Zexuan},
+  journal = {GigaScience},
+  year    = {2026}
+}
 ```
 
----
+Please also cite the original SAM and UNI publications.
 
-## 📁 Project Structure
+## License
 
-```
-FPNuNet/
-├── main/                      # Main training scripts
-│   ├── main_FPNuNet.py        # Main training entry point
-│   ├── trainer.py             # Training logic
-│   ├── config_manager.py      # Configuration management
-│   ├── utils.py               # Utility functions for data and model creation
-│   ├── get_model.py           # Model initialization
-│   ├── pl_module_multiHead.py # PyTorch Lightning module
-│   ├── metrics.py             # Evaluation metrics
-│   ├── infer_metrics.py       # Inference metrics (AJI, PQ, Dice, etc.)
-│   ├── losses_v5.py           # Loss functions
-│   ├── h5dataloder_v21.py     # HDF5 data loader
-│   ├── multi_train.py         # Multi-model training script
-│   └── ...
-├── network/                   # Network architecture modules
-│   ├── SAM_NuSCNet_v231.py    # Main network architecture
-│   ├── sam_pfae_fusion_neck_modules.py  # Frequency-aware fusion modules
-│   └── ...
-├── configs/                   # Configuration files
-│   └── CD47_nuclei_HV_h5_128x128.py
-├── CD47_IHCNUSC/              # Dataset directory
-│   ├── images/                # Image files
-│   ├── annotations/           # Annotation files
-│   └── readme_en.md           # Dataset documentation
-├── sam2_train/                # SAM2 related modules
-├── misc/                      # Miscellaneous utilities
-├── requirements.txt           # Python dependencies
-└── README.md                  # This file
-```
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-The CD47-IHCNuSC dataset is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Please refer to the license file in `CD47_IHCNUSC/` for details.
-
----
-
-## 🙏 Acknowledgments
-
-This code is based on:
-- **SAM2-PATH** [git link](https://github.com/cvlab-stonybrook/SAMPath) - A better segment anything model for semantic segmentation in digital pathology
-- **SAM-PATH** [Miccai conference paper](https://link.springer.com/chapter/10.1007/978-3-031-47401-9_16) - The original SAM-PATH work
-- **SAM2** [code](https://github.com/facebookresearch/segment-anything-2) - Meta's Segment Anything Model 2
-- **UNI encoder** [git link](https://github.com/mahmoodlab/UNI) - Universal encoder for pathology images
-
-All UNI and SAM2 pretrained weights can be downloaded from their respective repositories. Thanks to the authors for their excellent base code.
+The FPNuNet source code is released under the MIT License. SAM and UNI code
+and checkpoints are not redistributed by this repository.
