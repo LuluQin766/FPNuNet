@@ -150,7 +150,7 @@ classification in immunohistochemistry images. *GigaScience*, 15, giag091 (2026)
     volume = {15},
     pages = {giag091},
     year = {2026},
-    month = {01},
+    month = {09},
     issn = {2047-217X},
     doi = {10.1093/gigascience/giag091},
     url = {https://doi.org/10.1093/gigascience/giag091},
