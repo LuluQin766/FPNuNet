@@ -135,14 +135,26 @@ validation boundary.
 
 ## Citation
 
+Please cite our paper in **GigaScience**:
+
+Lulu Qin, Zhigang Pei, Xudong He, Jiarui Zhou, Xianhong Xu, and Zexuan Zhu.
+FPNuNet: a frequency-aware prompt-guided network for nuclear segmentation and
+classification in immunohistochemistry images. *GigaScience*, 15, giag091 (2026).
+[https://doi.org/10.1093/gigascience/giag091](https://doi.org/10.1093/gigascience/giag091)
+
 ```bibtex
 @article{qin2026fpnunet,
-  title   = {FPNuNet: A Frequency-Aware Prompt-Guided Network for Nuclear
-             Segmentation and Classification in Immunohistochemistry Images},
-  author  = {Qin, Lulu and Pei, Zhigang and He, Xudong and Zhou, Jiarui and
-             Xu, Xianhong and Zhu, Zexuan},
-  journal = {GigaScience},
-  year    = {2026}
+    author = {Qin, Lulu and Pei, Zhigang and He, Xudong and Zhou, Jiarui and Xu, Xianhong and Zhu, Zexuan},
+    title = {{FPNuNet}: a frequency-aware prompt-guided network for nuclear segmentation and classification in immunohistochemistry images},
+    journal = {GigaScience},
+    volume = {15},
+    pages = {giag091},
+    year = {2026},
+    month = {01},
+    issn = {2047-217X},
+    doi = {10.1093/gigascience/giag091},
+    url = {https://doi.org/10.1093/gigascience/giag091},
+    eprint = {https://academic.oup.com/gigascience/article-pdf/doi/10.1093/gigascience/giag091/70986305/giag091.pdf},
 }
 ```
 
